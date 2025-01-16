@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Q</div>
+        </div>
+        
+        <div class="login-container" id="loginForm">
+            <h1>LOGIN</h1>
+            <form onsubmit="return handleLogin(event)">
+                <div class="input-group">
+                    <input type="text" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" placeholder="Password" required>
+                </div>
+                <div class="links">
+                    <a href="#" class="forgot-password">Forgot Password ?</a>
+                    <a href="#" onclick="showSignup()" class="signup-link">Don't Have An Account ? Sign Up</a>
+                </div>
+                <button type="submit" class="btn-primary">Login</button>
+            </form>
+        </div>
+
+        <div class="signup-container hidden" id="signupForm">
+            <h1>SIGN UP</h1>
+            <form onsubmit="return handleSignup(event)">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <input type="text" placeholder="Full Name" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="date" placeholder="D-O-B" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" placeholder="Username" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" placeholder="Password" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" placeholder="Confirm Password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Sign Up</button>
+            </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
