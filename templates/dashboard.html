@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Platform - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='interview.css') }}">
+    <style>
+        .recording-status {
+            margin: 10px 0;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Proprep AI</div>
+            {% if session.get('user_id') %}
+            <nav class="nav-menu">
+                <a href="/logout" class="nav-link logout-btn">Logout</a>
+            </nav>
+            {% endif %}
+        </div>
+        
+        <div class="sidebar">
+            <a href="/past-scores" class="sidebar-link">Past Scores</a>
+            <a href="/tips" class="sidebar-link">Interview Tips</a>
+        </div>
+
+        <div class="main-content">
+            <div id="welcome-screen" class="screen">
+                <div class="welcome-card">
+                    <h2>Navigate The Interview Landscape With Confidence</h2>
+                    <div class="welcome-illustration">
+                        <!-- Add illustration here -->
+                    </div>
+                    <button class="btn-primary" onclick="showUploadScreen()">Take Your Interview</button>
+                </div>
+            </div>
+
+            <div id="upload-screen" class="screen hidden">
+                <div class="upload-card">
+                    <h2>Upload Your Resume</h2>
+                    <p class="upload-info">Upload your resume to get personalized interview questions based on your experience</p>
+                    <div class="upload-box">
+                        <input type="file" id="resume" accept=".pdf" onchange="handleFileSelect(event)">
+                        <label for="resume" class="upload-label">
+                            <span class="upload-text">Click to upload PDF</span>
+                            <span id="file-name" class="file-name"></span>
+                        </label>
+                    </div>
+                    <div class="question-selector">
+                        <h3>Choose the number of questions</h3>
+                        <input type="range" min="3" max="12" value="8" id="questionCount">
+                        <span id="questionCountValue">8</span>
+                    </div>
+                    <button class="btn-primary" onclick="startInterview()">Start Interview</button>
+                </div>
+            </div>
+
+            <div id="interview-screen" class="screen hidden">
+                <div class="interview-card">
+                    <video id="videoElement" autoplay></video>
+                    <div class="question-container">
+                        <p id="currentQuestion">Loading question...</p>
+                    </div>
+                    <div class="interview-controls">
+                        <button class="btn-primary" onclick="startRecording()">🎤 Start Recording</button>
+                        <button class="btn-secondary" onclick="stopRecording()">⏹ Stop Recording</button>
+                        <button class="btn-primary" onclick="nextQuestion()">Next Question →</button>
+                        <button class="btn-danger" onclick="endInterview()">End Interview</button>
+                    </div>
+                    <div id="recordingStatus" class="recording-status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('currentQuestion').textContent = currentQuestion;
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+                document.getElementById('recordingStatus').textContent = "Recording...";
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    document.getElementById('recordingStatus').textContent = "Recording Stopped.";
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    sendResponseToAPI(audioBlob);
+                };
+            }).catch((error) => {
+                alert('Error accessing microphone: ' + error.message);
+            });
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+            }
+        }
+        function sendResponseToAPI(audioBlob) {
+            const formData = new FormData();
+            const questionElement = document.getElementById('currentQuestion');
+            const questionText = questionElement ? questionElement.textContent : '';
+            if (!questionText) {
+                console.error('No question text available.');
+                return;
+            }
+
+            formData.append('question', questionText.trim());
+            formData.append('audio', audioBlob);
+
+            formData.append('audio', audioBlob);
+
+            fetch('/api/submit-answer', {
+                method: 'POST',
+                body: formData,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log('Response saved:', data);
+                })
+                .catch((error) => {
+                    console.error('Error sending response:', error);
+                });
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const fileName = event.target.files[0]?.name;
+            const fileNameElement = document.getElementById('file-name');
+            if (fileName) {
+                fileNameElement.textContent = fileName;
+                fileNameElement.style.display = 'block';
+            } else {
+                fileNameElement.style.display = 'none';
+            }
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+</body>
+</html>
