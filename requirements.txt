@@ -1,0 +1,6 @@
+pypdf
+flask
+langchain
+openai
+sqlite3
+flask-cors
